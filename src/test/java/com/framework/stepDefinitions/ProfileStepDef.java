@@ -20,8 +20,8 @@ public class ProfileStepDef {
         profilePageImpl.updateUserProfile();
     }
 
-    @Then("Verify a popup with success message displayed")
-    public void verifyAPopupWithSuccessMessageDisplayed() {
-        profilePageImpl.isProfileUpdated();
+    @Then("Verify profile last updated displayed with {string}")
+    public void verifyAPopupWithSuccessMessageDisplayed(String LastUpdatedVal) {
+        profilePageImpl.isProfileUpdated(LastUpdatedVal);
     }
 }

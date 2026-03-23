@@ -1,9 +1,9 @@
 package com.framework.utils;
 
-import io.cucumber.java.AfterStep;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
+
 import java.awt.AWTException;
 import java.awt.Rectangle;
 import java.awt.Robot;
@@ -21,14 +21,6 @@ import javax.imageio.ImageIO;
 
 
 public class ScreenShotUtils {
-
-//    WebDriver driver;
-
-    public ScreenShotUtils(WebDriver driver) {
-//        this.driver = driver;
-        throw new UnsupportedOperationException("Utility class");
-    }
-
 
     private  Robot robot;
 
@@ -119,17 +111,14 @@ public class ScreenShotUtils {
      * @param scenarioName The name of the scenario or test.
      * @return The absolute path to the saved screenshot, or null if it failed.
      */
-    @AfterStep
-    public String takeScreenshot(String scenarioName,WebDriver driver) {
+    public static String takeScreenshot(String scenarioName,WebDriver driver) {
         // 1. Define the base directory relative to the project root
         String projectRoot = System.getProperty("user.dir");
-        Path screenshotDir = Paths.get(projectRoot, "Reports", "ScreenShot");
+        Path screenshotDir = Paths.get(projectRoot, "Reports", "ScreenShots");
 
         // 2. Sanitize the scenario name and generate a timestamped file name
         String safeName = scenarioName.replaceAll("[^a-zA-Z0-9_-]", "_");
-//        String timestamp =  LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         String timestamp = DateTimeFormatter.ofPattern("MMM_dd_yyyy_hh-mm a").format(LocalDateTime.now());
-
         String fileName = safeName + "_" + timestamp + ".png";
 
         Path destinationPath = screenshotDir.resolve(fileName);
@@ -143,8 +132,8 @@ public class ScreenShotUtils {
 
             // 5. Copy the file to the target destination
             Files.copy(sourceFile.toPath(), destinationPath, StandardCopyOption.REPLACE_EXISTING);
-
-            return destinationPath.toAbsolutePath().toString();
+            System.out.println("screenshot path '"+destinationPath.toAbsolutePath().toString()+"'");
+            return "../ScreenShots/" + fileName;
 
         } catch (IOException e) {
             System.err.println("Failed to save screenshot: " + e.getMessage());

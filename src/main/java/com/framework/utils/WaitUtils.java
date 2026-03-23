@@ -14,7 +14,7 @@ import java.util.NoSuchElementException;
 
 public class WaitUtils {
     WebDriver driver;
-    private WebDriverWait wait;
+
 
     final Duration defaultTimeout = Duration.ofSeconds(30);
     final Duration milliSec = Duration.ofMillis(500);

@@ -3,7 +3,7 @@ package com.framework.utils;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 
-public class extentReportUtils {
+public class ExtentReportUtils {
     public static ExtentReports reportsInitializer() {
         // to create extent reports we need to use two classes.
         // they are ExtentReporter and  ExtentSparkReporter.

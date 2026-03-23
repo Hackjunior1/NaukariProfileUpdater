@@ -76,7 +76,7 @@
         <dependency>
             <groupId>tech.grasshopper</groupId>
             <artifactId>extentreports-cucumber7-adapter</artifactId>
-            <version>1.14.0</version>
+            <version>1.13.0</version>
         </dependency>
 
         <dependency>

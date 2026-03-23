@@ -132,7 +132,7 @@ public class ProfilePageImpl {
 
     public void updateUserProfile(){
        profileEditButton.click();
-       actionsUtils.waitForElementToDisappear(loader,300);
+       actionsUtils.waitForElementToDisappear(loader,500);
        actionsUtils.scrollToElementUsingJsExecutor(profileSaveButton);
         try {
             Thread.sleep(5000);
@@ -141,9 +141,9 @@ public class ProfilePageImpl {
         }
        profileSaveButton.getText();
     }
-    public void isProfileUpdated(){
+    public void isProfileUpdated(String LastUpdatedVal){
         String profileUpdatedText = profileUpdatedTxtMgs.getText();
-        Assert.assertEquals(profileUpdatedText,"Today","Profile last updated - "+profileUpdatedText);
+        Assert.assertEquals(profileUpdatedText,LastUpdatedVal,"Profile last updated - "+profileUpdatedText);
     }
 
 }
