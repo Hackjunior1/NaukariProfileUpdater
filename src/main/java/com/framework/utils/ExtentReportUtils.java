@@ -9,7 +9,7 @@ public class ExtentReportUtils {
         // they are ExtentReporter and  ExtentSparkReporter.
         // ExtentSparkReporter class responsible to hold all the metadata about an executing test
         // in the form of object.
-        ExtentSparkReporter sparkReporter = new ExtentSparkReporter(System.getProperty("user.dir") + "/reports/ExtentReports/Report.html");
+        ExtentSparkReporter sparkReporter = new ExtentSparkReporter(System.getProperty("user.dir") + "/Reports/ExtentReports/SparkReport.html");
         sparkReporter.config().setReportName("Naukri Profile Update Reporter");
         sparkReporter.config().setDocumentTitle("Naukri Profile Execution Report");
 

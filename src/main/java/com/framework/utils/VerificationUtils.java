@@ -1,56 +1,43 @@
 package com.framework.utils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.Assert;
+import org.testng.asserts.SoftAssert;
 
 import java.time.Duration;
-import java.util.function.Supplier;
 
 public class VerificationUtils {
+    private static final Logger logger = LogManager.getLogger(VerificationUtils.class);
 
     private final WebDriver driver;
     private final Duration defaultTimeout = Duration.ofSeconds(10);
-
-    public VerificationUtils(WebDriver driver) {
-        this.driver = driver;
-    }
+    private final WaitUtils waitUtils;
+    private final SoftAssert softAssert;
 
     /**
-     * CORE RETRY MECHANISM: Wraps validation logic in a retry loop to handle
-     * transient state issues like Stale Elements in dynamic DOMs.
+     * ✅ Constructor now accepts WaitUtils from PageObjectManager
+     * Eliminates the need to create objects with new keyword
      */
-    private boolean executeWithRetry(Supplier<Boolean> validationLogic, String actionDescription) {
-        int attempts = 0;
-        int maxRetries = 3;
-        while (attempts < maxRetries) {
-            try {
-                return validationLogic.get();
-            } catch (StaleElementReferenceException | NoSuchElementException e) {
-                System.out.println("⚠️ DOM state changed during '" + actionDescription + "'. Retrying... (" + (attempts + 1) + "/" + maxRetries + ")");
-                waitFor(); // Brief pause before retrying
-            } catch (TimeoutException e) {
-                System.out.println("❌ Timeout occurred during: " + actionDescription);
-                return false;
-            } catch (Exception e) {
-                System.out.println("❌ Unexpected error during '" + actionDescription + "': " + e.getMessage());
-                return false;
-            }
-            attempts++;
-        }
-        return false;
+    public VerificationUtils(WebDriver driver, WaitUtils waitUtils) {
+        this.driver = driver;
+        this.softAssert = new SoftAssert();
+        this.waitUtils = waitUtils;
     }
 
-    private void waitFor() {
+    private void waitFor(int timeInMillis) {
         try {
-            Thread.sleep(500);
+            Thread.sleep(timeInMillis);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
 
     private WebDriverWait getWait() {
-        return new WebDriverWait(driver, defaultTimeout);
+        return waitUtils.explicitWait(driver, defaultTimeout);
     }
 
     // =========================================================================
@@ -58,82 +45,208 @@ public class VerificationUtils {
     // =========================================================================
 
     public boolean isElementDisplayed(WebElement element) {
-        return executeWithRetry(() -> {
+        try {
+            if (element == null) {
+                logger.warn("isElementDisplayed: element is null");
+                return false;
+            }
             getWait().until(ExpectedConditions.visibilityOf(element));
             return element.isDisplayed();
-        }, "verified element is displayed: " + element);
+        } catch (StaleElementReferenceException | NoSuchElementException | TimeoutException e) {
+            logger.warn("isElementDisplayed failed", e);
+            return false;
+        } catch (Exception e) {
+            logger.error("Unexpected error in isElementDisplayed", e);
+            return false;
+        }
     }
+
+    public boolean isElementDisplayed(By locator) {
+        try {
+            if (driver.findElement(locator) == null) {
+                logger.warn("isElementDisplayed: element is null");
+                return false;
+            }
+            getWait().until(ExpectedConditions.visibilityOfElementLocated(locator));
+            return driver.findElement(locator).isDisplayed();
+        } catch (StaleElementReferenceException | NoSuchElementException | TimeoutException e) {
+            logger.warn("isElementDisplayed failed", e);
+            return false;
+        } catch (Exception e) {
+            logger.error("Unexpected error in isElementDisplayed", e);
+            return false;
+        }
+    }
+
     public boolean isElementInvisible(By locator) {
-        return executeWithRetry(() ->
-                        getWait().until(ExpectedConditions.invisibilityOfElementLocated(locator))
-                , "verify element is invisible: " + locator);
+        try {
+            getWait().until(ExpectedConditions.invisibilityOfElementLocated(locator));
+            return true;
+        } catch (TimeoutException | NoSuchElementException e) {
+            logger.warn("isElementInvisible(By) failed", e);
+            return false;
+        } catch (Exception e) {
+            logger.error("Unexpected error in isElementInvisible(By)", e);
+            return false;
+        }
+    }
+
+    public boolean isElementInvisible(WebElement element) {
+        try {
+            getWait().until(ExpectedConditions.invisibilityOf(element));
+            return true;
+        } catch (TimeoutException | NoSuchElementException e) {
+            logger.warn("isElementInvisible(WebElement) failed", e);
+            return false;
+        } catch (Exception e) {
+            logger.error("Unexpected error in isElementInvisible(WebElement)", e);
+            return false;
+        }
     }
 
     public boolean isElementEnabled(By locator) {
-        return executeWithRetry(() -> {
+        try {
             WebElement element = getWait().until(ExpectedConditions.presenceOfElementLocated(locator));
             return element.isEnabled();
-        }, "verify element is enabled: " + locator);
+        } catch (TimeoutException | NoSuchElementException e) {
+            logger.warn("isElementEnabled failed", e);
+            return false;
+        } catch (Exception e) {
+            logger.error("Unexpected error in isElementEnabled", e);
+            return false;
+        }
     }
 
     public boolean isElementSelected(By locator) {
-        return executeWithRetry(() -> {
+        try {
             WebElement element = getWait().until(ExpectedConditions.presenceOfElementLocated(locator));
             return element.isSelected();
-        }, "verify element is selected: " + locator);
+        } catch (TimeoutException | NoSuchElementException e) {
+            logger.warn("isElementSelected failed", e);
+            return false;
+        } catch (Exception e) {
+            logger.error("Unexpected error in isElementSelected", e);
+            return false;
+        }
     }
 
     // =========================================================================
-    // TEXT & ATTRIBUTE VALIDATIONS
+    // TEXT & ATTRIBUTE VALIDATIONS RETURNS A BOOLEAN VALUE.
     // =========================================================================
 
     public boolean verifyTextEquals(By locator, String expectedText) {
-        return executeWithRetry(() -> {
+        try {
             getWait().until(ExpectedConditions.visibilityOfElementLocated(locator));
             return getWait().until(ExpectedConditions.textToBe(locator, expectedText));
-        }, "verify text equals '" + expectedText + "' for: " + locator);
+        } catch (TimeoutException | NoSuchElementException e) {
+            logger.warn("verifyTextEquals failed", e);
+            return false;
+        } catch (Exception e) {
+            logger.error("Unexpected error in verifyTextEquals", e);
+            return false;
+        }
     }
 
     public boolean verifyTextContains(By locator, String partialText) {
-        return executeWithRetry(() -> {
+        try {
             WebElement element = getWait().until(ExpectedConditions.visibilityOfElementLocated(locator));
             String actualText = element.getText();
             return actualText != null && actualText.contains(partialText);
-        }, "verify text contains '" + partialText + "' for: " + locator);
+        } catch (TimeoutException | NoSuchElementException e) {
+            logger.warn("verifyTextContains failed", e);
+            return false;
+        } catch (Exception e) {
+            logger.error("Unexpected error in verifyTextContains", e);
+            return false;
+        }
     }
 
     public boolean verifyAttributeEquals(By locator, String attributeName, String expectedValue) {
-        return executeWithRetry(() -> {
+        try {
             getWait().until(ExpectedConditions.presenceOfElementLocated(locator));
             return getWait().until(ExpectedConditions.attributeToBe(locator, attributeName, expectedValue));
-        }, "verify attribute '" + attributeName + "' equals '" + expectedValue + "' for: " + locator);
+        } catch (TimeoutException | NoSuchElementException e) {
+            logger.warn("verifyAttributeEquals failed", e);
+            return false;
+        } catch (Exception e) {
+            logger.error("Unexpected error in verifyAttributeEquals", e);
+            return false;
+        }
     }
 
     // =========================================================================
-    // PAGE & BROWSER VALIDATIONS
+    // PAGE & BROWSER VALIDATIONS RETURNS A BOOLEAN VALUE.
     // =========================================================================
 
     public boolean verifyPageTitleEquals(String expectedTitle) {
-        return executeWithRetry(() ->
-                        getWait().until(ExpectedConditions.titleIs(expectedTitle))
-                , "verify page title is: " + expectedTitle);
+        try {
+            return getWait().until(ExpectedConditions.titleIs(expectedTitle));
+        } catch (TimeoutException | NoSuchElementException e) {
+            logger.warn("verifyPageTitleEquals failed", e);
+            return false;
+        } catch (Exception e) {
+            logger.error("Unexpected error in verifyPageTitleEquals", e);
+            return false;
+        }
     }
 
     public boolean verifyPageTitleContains(String partialTitle) {
-        return executeWithRetry(() ->
-                        getWait().until(ExpectedConditions.titleContains(partialTitle))
-                , "verify page title contains: " + partialTitle);
+        try {
+            return getWait().until(ExpectedConditions.titleContains(partialTitle));
+        } catch (TimeoutException | NoSuchElementException e) {
+            logger.warn("verifyPageTitleContains failed", e);
+            return false;
+        } catch (Exception e) {
+            logger.error("Unexpected error in verifyPageTitleContains", e);
+            return false;
+        }
     }
 
     public boolean verifyCurrentUrlEquals(String expectedUrl) {
-        return executeWithRetry(() ->
-                        getWait().until(ExpectedConditions.urlToBe(expectedUrl))
-                , "verify current URL is: " + expectedUrl);
+        try {
+            return getWait().until(ExpectedConditions.urlToBe(expectedUrl));
+        } catch (TimeoutException | NoSuchElementException e) {
+            logger.warn("verifyCurrentUrlEquals failed", e);
+            return false;
+        } catch (Exception e) {
+            logger.error("Unexpected error in verifyCurrentUrlEquals", e);
+            return false;
+        }
     }
 
     public boolean verifyCurrentUrlContains(String partialUrl) {
-        return executeWithRetry(() ->
-                        getWait().until(ExpectedConditions.urlContains(partialUrl))
-                , "verify current URL contains: " + partialUrl);
+        try {
+            return getWait().until(ExpectedConditions.urlContains(partialUrl));
+        } catch (TimeoutException | NoSuchElementException e) {
+            logger.warn("verifyCurrentUrlContains failed", e);
+            return false;
+        } catch (Exception e) {
+            logger.error("Unexpected error in verifyCurrentUrlContains", e);
+            return false;
+        }
+    }
+
+    // =========================================================================
+    // STRING VALIDATIONS (HARD ASSERTIONS).
+    // =========================================================================
+
+    // Hard Assertion: Use for critical flow blockers
+    public void verifyStrEqual(String actual, String expected, String message) {
+        logger.info("Validating: {}", message);
+        Assert.assertEquals(actual, expected, message);
+    }
+
+    // =========================================================================
+    // STRING VALIDATIONS (SOFT ASSERTIONS).
+    // =========================================================================
+
+    // Soft Assertion: Use for non-critical UI checks (e.g., footer text)
+    public void softAssertStrEqual(String actual, String expected, String message) {
+        softAssert.assertEquals(actual, expected, message);
+    }
+
+    // Call this at the end of the test to report soft failures
+    public void finalizeValidations() {
+        softAssert.assertAll();
     }
 }

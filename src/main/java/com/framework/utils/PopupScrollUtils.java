@@ -17,8 +17,9 @@ public class PopupScrollUtils {
 
     /**
      * Scrolls down inside a specific container (like a popup).
+     *
      * @param container The scrollable element/div of the popup.
-     * @param target The element you are looking for inside the popup.
+     * @param target    The element you are looking for inside the popup.
      */
     public void scrollDownInPopup(WebElement container, WebElement target) {
         Actions actions = new Actions(driver);

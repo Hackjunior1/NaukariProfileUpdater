@@ -1,4 +1,3 @@
-
 Feature: Naukri Profile Auto-Updater
   As an active job seeker,
   I want to automate the process of updating my Naukri profile

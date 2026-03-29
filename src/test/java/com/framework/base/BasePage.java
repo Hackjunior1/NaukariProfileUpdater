@@ -3,6 +3,8 @@ package com.framework.base;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.framework.utils.ConfigReader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -18,11 +20,39 @@ import java.util.HashMap;
 import java.util.List;
 
 public class BasePage {
+    private static final Logger logger = LogManager.getLogger(BasePage.class);
 
     // ThreadLocal ensures thread safety for parallel test execution
     private static ThreadLocal<WebDriver> driver = new ThreadLocal<>();
+
+    public static ChromeOptions setupUserProfileForChromeDriver() {
+        ChromeOptions options = new ChromeOptions();
+
+        // 1. Point to the local directory where Chrome stores your user data
+        // Replace <YourUsername> with your actual OS username
+        options.addArguments("user-data-dir=C:\\Users\\Suresh.Patibandla\\AppData\\Local\\Google\\Chrome\\User Data");
+
+        // 2. Point to the specific profile folder (e.g., "Default", "Profile 1", "Profile 2")
+        options.addArguments("profile-directory=Default");
+        options.addArguments("--disable-notifications");
+
+        return options;
+    }
+
+    public static ChromeOptions setChromeDriverHeadLessOptions() {
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless=new");
+        options.addArguments("--window-size=1920,1080"); // Set a fixed size so screenshots aren't tiny mobile-sized captures
+        options.addArguments("--disable-gpu");
+        options.addArguments("--no-sandbox"); // Crucial for Jenkins/Docker
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--disable-notifications");
+        return options;
+    }
+
     /**
      * Initializes the WebDriver based on the browser name passed.
+     *
      * @param browserName e.g., "chrome", "firefox", "edge"
      */
     public void initializeBrowser(String browserName) {
@@ -33,7 +63,7 @@ public class BasePage {
                 ChromeOptions chromeOptions;
                 if (Boolean.parseBoolean(ConfigReader.getProperty("headless"))) {
                     chromeOptions = setChromeDriverHeadLessOptions();
-                } else{
+                } else {
                     chromeOptions = new ChromeOptions();
                     chromeOptions.addArguments("--disable-notifications");
                 }
@@ -42,7 +72,7 @@ public class BasePage {
             case "firefox" -> localDriver = new FirefoxDriver();
             case "edge" -> localDriver = new EdgeDriver();
             default -> {
-                System.out.println("Browser not explicitly supported. Defaulting to Chrome.");
+                logger.warn("Browser '{browserName}' not explicitly supported. Defaulting to Chrome.", browserName);
                 localDriver = new ChromeDriver();
             }
         }
@@ -61,6 +91,7 @@ public class BasePage {
 
     /**
      * Retrieves the thread-safe WebDriver instance.
+     *
      * @return WebDriver
      */
     public WebDriver getDriver() {
@@ -75,30 +106,6 @@ public class BasePage {
             getDriver().quit();
             driver.remove();
         }
-    }
-    public static ChromeOptions setupUserProfileForChromeDriver() {
-        ChromeOptions options = new ChromeOptions();
-
-        // 1. Point to the local directory where Chrome stores your user data
-        // Replace <YourUsername> with your actual OS username
-        options.addArguments("user-data-dir=C:\\Users\\Suresh.Patibandla\\AppData\\Local\\Google\\Chrome\\User Data");
-
-        // 2. Point to the specific profile folder (e.g., "Default", "Profile 1", "Profile 2")
-        options.addArguments("profile-directory=Default");
-        options.addArguments("--disable-notifications");
-
-        return options;
-    }
-
-    public static ChromeOptions setChromeDriverHeadLessOptions(){
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new");
-        options.addArguments("--window-size=1920,1080"); // Set a fixed size so screenshots aren't tiny mobile-sized captures
-        options.addArguments("--disable-gpu");
-        options.addArguments("--no-sandbox"); // Crucial for Jenkins/Docker
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--disable-notifications");
-        return options;
     }
 
     public List<HashMap<String, String>> readJsonDataToMap(String filePath) throws IOException {

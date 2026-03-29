@@ -1,46 +1,48 @@
 package com.framework.utils;
 
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
-
-import org.openqa.selenium.*;
-import org.openqa.selenium.support.ui.*;
 import java.util.NoSuchElementException;
 
 
 public class WaitUtils {
-    WebDriver driver;
-
+    private static final Logger logger = LogManager.getLogger(WaitUtils.class);
 
     final Duration defaultTimeout = Duration.ofSeconds(30);
     final Duration milliSec = Duration.ofMillis(500);
+    private final WebDriver webDriver;
 
-    public WaitUtils(WebDriver driver) {
-        this.driver = driver;
+    public WaitUtils(WebDriver webDriver) {
+        this.webDriver = webDriver;
     }
 
+
 // Refer gemini chat Thread "https://gemini.google.com/share/074978d0ab75"
+
     /**
      * Fluent Wait implementation for Element Visibility.
      * Handles NoSuchElement and StaleElement exceptions during the polling period.
      */
-    public WebElement waitForVisible(WebElement element) {
-        Wait<WebDriver> fluentWait = new FluentWait<>(driver)
-                .withTimeout(defaultTimeout)
-                .pollingEvery(milliSec)
+    public WebElement waitForElementVisible(By locator, int waitTIme, int pollingEvery) {
+        Wait<WebDriver> fluentWait = new FluentWait<>(webDriver)
+                .withTimeout(Duration.ofSeconds(waitTIme))
+                .pollingEvery(Duration.ofMillis(pollingEvery))
                 .ignoring(NoSuchElementException.class)
                 .ignoring(StaleElementReferenceException.class)
                 .withMessage("Timeout: Element was not visible after " + defaultTimeout + " seconds.");
 
         try {
-            return fluentWait.until(ExpectedConditions.visibilityOf(element));
+           return fluentWait.until(ExpectedConditions.visibilityOfElementLocated(locator));
         } catch (TimeoutException e) {
             // Log specific error details or take a screenshot here
-            throw new TimeoutException("Failed to find element visibility: " + element.toString(), e);
+            throw new TimeoutException("Failed to find element visibility: " + locator.toString(), e);
         }
     }
 
@@ -49,7 +51,7 @@ public class WaitUtils {
      * Specifically ignores StaleElementReferenceException which often occurs during JS refreshes.
      */
     public WebElement waitForClickable(WebElement element) {
-        Wait<WebDriver> wait = new FluentWait<>(driver)
+        Wait<WebDriver> wait = new FluentWait<>(webDriver)
                 .withTimeout(defaultTimeout)
                 .pollingEvery(milliSec)
                 .ignoring(NoSuchElementException.class)
@@ -63,11 +65,51 @@ public class WaitUtils {
             throw new TimeoutException("Element remained non-clickable: " + element.toString(), e);
         }
     }
+
+    /**
+     *
+     * @return WebElement once the element is located in DOM irrespective of whether it is visible in UI.
+     * presenceOfElementLocated() will only look for element in DOM and check the availability of element
+     * Once the element is located in DOM this method returns that element.
+     */
+
+    public void waitForElementPresence(int timeoutSec, int pollingMs, By locator) {
+        Wait<WebDriver> wait = new FluentWait<>(webDriver)
+                .withTimeout(Duration.ofSeconds(timeoutSec))
+                .pollingEvery(Duration.ofMillis(pollingMs))
+                .ignoring(NoSuchElementException.class)
+                .ignoring(StaleElementReferenceException.class);
+        try {
+            wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+        } catch (TimeoutException e) {
+            throw new TimeoutException("Element remained non-visible: " + locator.toString(), e);
+        }
+    }
+
+    /**
+     * Waits for a loader or spinner to disappear from the UI/DOM.
+     * Use 'By' locator to avoid StaleElementReferenceException.
+     */
+    public void waitForElementToDisappear(WebElement locator, int timeoutInMilliSeconds) {
+        try {
+            explicitWait(webDriver, Duration.ofMillis(timeoutInMilliSeconds))
+                    .until(ExpectedConditions.invisibilityOf(locator));
+            logger.info("waitForElementToDisappear: element is now invisible: {}", locator);
+
+        } catch (TimeoutException e) {
+            logger.warn("waitForElementToDisappear timeout after {} ms: {}", timeoutInMilliSeconds, locator);
+
+        } catch (Exception e) {
+            logger.error("waitForElementToDisappear unexpected error", e);
+
+        }
+    }
+
     /**
      * Sets the Implicit Wait for the driver instance.
      * Note: Use cautiously as it can conflict with Explicit Waits.
      */
-    public void ImplicitWebDriverWait(int seconds) {
+    public void ImplicitWebDriverWait(WebDriver driver, int seconds) {
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(seconds));
     }
 
@@ -76,15 +118,15 @@ public class WaitUtils {
      * Returns a standard WebDriverWait instance for custom conditions with default wait used in this.
      *
      */
-    public WebDriverWait explicitWait(int milliSeconds){
-        return new WebDriverWait(driver, Duration.ofMillis(milliSeconds)) ;
+    public WebDriverWait explicitWait(WebDriver driver, Duration milliSeconds) {
+        return new WebDriverWait(driver, milliSeconds);
     }
 
 
     /**
      * Configures a FluentWait with custom polling and ignored exceptions.
      */
-    public Wait<WebDriver> getFluentWait(int timeoutSec, int pollingMs) {
+    public Wait<WebDriver> getFluentWait(WebDriver driver, int timeoutSec, int pollingMs) {
         return new FluentWait<>(driver)
                 .withTimeout(Duration.ofSeconds(timeoutSec))
                 .pollingEvery(Duration.ofMillis(pollingMs))

@@ -1,27 +1,34 @@
 package com.framework.Hooks;
 
+import com.aventstack.extentreports.ExtentReports;
 import com.framework.TestContext.TestContext;
 import com.framework.base.BasePage;
 import com.framework.utils.ConfigReader;
+import com.framework.utils.ExtentReportUtils;
 import com.framework.utils.ScreenShotUtils;
 import io.cucumber.java.After;
-import io.cucumber.java.Before;
 import io.cucumber.java.AfterStep;
+import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
-import org.openqa.selenium.TakesScreenshot;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebDriver;
 import org.testng.Reporter;
 
 
 public class Hooks {
+    private static final Logger logger = LogManager.getLogger(Hooks.class);
+    private static ExtentReports extentReports = ExtentReportUtils.reportsInitializer();
     TestContext testContext;
     WebDriver driver;
     BasePage basePage;
-    // The TestContext is injected automatically by PicoContainer
+    ScreenShotUtils screenShotUtils;
+
     public Hooks(TestContext testContext) {
         this.testContext = testContext;
         this.basePage = testContext.getPageObjectManager().getBasePage();
     }
+
     /**
      * This hook only runs for scenarios tagged with @UI.
      * It prevents the browser from launching during API test execution.
@@ -29,8 +36,11 @@ public class Hooks {
     @Before("@UI")
     public void setupUI() {
         basePage.initializeBrowser(ConfigReader.getProperty("browser"));
-        Reporter.getCurrentTestResult().setAttribute("driver", basePage.getDriver());
-
+        this.driver = basePage.getDriver();
+        this.screenShotUtils = testContext.getPageObjectManager().getScreenShotUtils();
+        
+        Reporter.getCurrentTestResult().setAttribute("driver", this.driver);
+        logger.info("Browser initialized and ScreenShotUtils ready");
     }
 
     /**
@@ -39,7 +49,7 @@ public class Hooks {
      */
     @Before(order = 1)
     public void globalSetup(Scenario scenario) {
-        System.out.println("Starting execution for scenario: " + scenario.getName());
+        logger.info("Starting execution for scenario: {}", scenario.getName());
     }
 
     @AfterStep("@UI")
@@ -49,9 +59,9 @@ public class Hooks {
         if (driver != null) {
             try {
                 // Save screenshot to disk - Extent will find it via screenshot.dir config
-                ScreenShotUtils.takeScreenshot(scenario.getName(), driver);
+                screenShotUtils.takeScreenshot();
             } catch (Exception e) {
-                System.err.println("Failed to capture screenshot: " + e.getMessage());
+                logger.error("Failed to capture screenshot", e);
             }
         }
     }
@@ -69,10 +79,9 @@ public class Hooks {
             if (scenario.isFailed()) {
                 try {
                     // Save failed screenshot to disk
-                    String safeTestName = scenario.getName().replaceAll("[^a-zA-Z0-9_-]", "_");
-                    ScreenShotUtils.takeScreenshot(safeTestName, driver);
+                    screenShotUtils.takeScreenshot();
                 } catch (Exception e) {
-                    System.err.println("Failed to capture screenshot on failure: " + e.getMessage());
+                    logger.error("Failed to capture screenshot on failure", e);
                 }
             }
             basePage.quitBrowser();
@@ -103,11 +112,15 @@ public class Hooks {
 //            basePage.quitBrowser();
 //        }
 //    }
+
     /**
      * This hook runs after ANY scenario (@UI or @API).
      */
     @After(order = 1)
     public void globalTearDown(Scenario scenario) {
-        System.out.println("Finished execution for scenario: " + scenario.getName() + " | Status: " + scenario.getStatus());
+        logger.info("Finished execution for scenario: {} | Status: {}", scenario.getName(), scenario.getStatus());
+         if (extentReports != null) {
+            extentReports.flush();
+        }
     }
 }

@@ -1,53 +1,44 @@
 package com.framework.pageObjectImplementation;
 
-import com.framework.base.BasePage;
-
+import com.framework.TestContext.TestContext;
 import com.framework.utils.BrowserUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.PageFactory;
 
-public class LoginPageImpl extends BasePage{
+public class LoginPageImpl{
+    private static final Logger logger = LogManager.getLogger(LoginPageImpl.class);
 
     BrowserUtils browserUtils;
     WebDriver driver;
 
-    @FindBy(id = "usernameField")
-    private WebElement txtEmailOrUsername;
-
-    @FindBy(id = "passwordField")
-    private WebElement txtPassword;
-
-    @FindBy(xpath = "//button[@type='submit']")
-    private WebElement btnLogin;
-
-    @FindBy(linkText = "Forgot Password?")
-    private WebElement lnkForgotPassword;
-
-    @FindBy(xpath = "//span[@class='err-msg']")
-    private WebElement lblErrorMessage;
-
-    @FindBy(xpath = "//span[text()='Sign in with Google']/..")
-    private WebElement btnGoogleLogin;
-
-    @FindBy(xpath = "//a[text()='Register for free']")
-    private WebElement lnkRegister;
-
-    @FindBy(xpath = "//input[@aria-label='Email or phone']")
-    private WebElement googleUserName;
-
-    @FindBy(xpath = "//div[@data-primary-action-label='Next']//span[normalize-space(.)='Next']/parent::button")
-    private WebElement googleNextButton;
-
-    @FindBy(xpath = "//input[@aria-label='Enter your password']")
-    private WebElement googleUserPassword;
+//     =========================================================================
+    /**
+     * Apparently defining the locators using a By is more reliable than defining them using a WebElement.
+     * To get more clarification checkout the below link and read through the end
+     * "<a href="https://share.google/aimode/GiOPLPqSUD2Q476w7"/>"
+     */
+//     =========================================================================
 
     public LoginPageImpl(WebDriver driver) {
         this.driver = driver;
-        browserUtils = new BrowserUtils(driver);
-        PageFactory.initElements(this.driver, this);
+        TestContext testContext = new TestContext();
+
+        browserUtils = testContext.getPageObjectManager().getBrowserUtils();
     }
+
+    private final By txtEmailOrUsername = By.id("usernameField");
+    private final By txtPassword = By.id("passwordField");
+    private final By btnLogin = By.xpath("//button[@type='submit']");
+    private final By lnkForgotPassword = By.linkText("Forgot Password?");
+    private final By lblErrorMessage = By.xpath("//span[@class='err-msg']");
+    private final By btnGoogleLogin = By.xpath("//span[text()='Sign in with Google']/..");
+    private final By lnkRegister = By.xpath("//a[text()='Register for free']");
+    private final By googleUserName = By.xpath("//input[@aria-label='Email or phone']");
+    private final By googleNextButton = By.xpath(
+            "//div[@data-primary-action-label='Next']//span[normalize-space(.)='Next']/parent::button");
+    private final By googleUserPassword = By.xpath("//input[@aria-label='Enter your password']");
 
     /**
      * Navigates to the provided base URL.
@@ -63,9 +54,9 @@ public class LoginPageImpl extends BasePage{
      * @param password Fetched from .env
      */
     public void performLogin(String username, String password) {
-        txtEmailOrUsername.sendKeys(username);
-        txtPassword.sendKeys(password);
-        btnLogin.click();
-        System.out.println("login button clicked and user login action started");
+        driver.findElement(txtEmailOrUsername).sendKeys(username);
+        driver.findElement(txtPassword).sendKeys(password);
+        driver.findElement(btnLogin).click();
+        logger.info("login button clicked and user login action started");
     }
 }

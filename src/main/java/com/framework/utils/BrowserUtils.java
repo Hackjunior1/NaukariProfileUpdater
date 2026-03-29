@@ -1,13 +1,15 @@
 package com.framework.utils;
 
-import com.framework.base.BasePage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebDriver;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class BrowserUtils extends BasePage {
+public class BrowserUtils {
+    private static final Logger logger = LogManager.getLogger(BrowserUtils.class);
     WebDriver driver;
     private String mainWindowHandle;
 
@@ -21,7 +23,7 @@ public class BrowserUtils extends BasePage {
      */
     public void captureMainWindow() {
         this.mainWindowHandle = driver.getWindowHandle();
-        System.out.println("Captured Main window is = "+this.mainWindowHandle);
+        logger.info("Captured Main window handle: {}", this.mainWindowHandle);
     }
 
     /**
@@ -31,7 +33,7 @@ public class BrowserUtils extends BasePage {
         Set<String> allWindowHandles = driver.getWindowHandles();
         for (String handle : allWindowHandles) {
             if (!handle.equals(mainWindowHandle)) {
-                System.out.println("Switching focus to child window '"+handle+"'");
+                logger.info("Switching focus to child window '{}'", handle);
                 driver.switchTo().window(handle);
                 break; // Switches to the first found child window
             }
@@ -40,12 +42,13 @@ public class BrowserUtils extends BasePage {
 
     /**
      * Switches focus to a specific window based on its page title.
+     *
      * @param targetTitle The partial or full title of the target window.
      */
     public void switchToWindowByTitle(String targetTitle) {
         Set<String> allWindowHandles = driver.getWindowHandles();
         for (String handle : allWindowHandles) {
-            System.out.println("Switching focus to window with title '"+handle+"'");
+            logger.info("Switching focus to window with handle '{}' to check title", handle);
             driver.switchTo().window(handle);
             if (driver.getTitle().contains(targetTitle)) {
                 break;
@@ -58,10 +61,10 @@ public class BrowserUtils extends BasePage {
      */
     public void switchToMainWindow() {
         if (mainWindowHandle != null) {
-            System.out.println("Switching focus to main Window '"+mainWindowHandle+"'");
+            logger.info("Switching focus to main window '{}'.", mainWindowHandle);
             driver.switchTo().window(mainWindowHandle);
         } else {
-            System.out.println("Main window handle was never captured.");
+            logger.warn("Main window handle was never captured.");
         }
     }
 
@@ -84,7 +87,7 @@ public class BrowserUtils extends BasePage {
         Set<String> allWindowHandles = driver.getWindowHandles();
         for (String handle : allWindowHandles) {
             if (!handle.equals(mainWindowHandle)) {
-                System.out.println("Switching focus to '"+handle+"'");
+                logger.info("Switching focus to '{}' for close.", handle);
                 driver.switchTo().window(handle);
                 driver.close();
             }

@@ -1,22 +1,38 @@
 package com.framework.utils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
 public class ActionsUtils {
-   private final WebDriver driver;
+    private static final Logger logger = LogManager.getLogger(ActionsUtils.class);
+    private final WebDriver driver;
     Actions actions;
     WaitUtils waitUtils;
+
     public ActionsUtils(WebDriver driver) {
         this.driver = driver;
         actions = new Actions(driver);
-        waitUtils = new WaitUtils(driver);
+
+    }
+
+    /**
+     * Helper method to check if the element is displayed and enabled (interactable).
+     */
+    private static boolean isInteractable(WebElement element) {
+        try {
+            boolean idDisplayed = element.isDisplayed();
+            boolean isEnabled = element.isEnabled();
+            return !element.isDisplayed() || !element.isEnabled();
+        } catch (Exception e) {
+            return true;
+        }
     }
 
     /**
@@ -30,7 +46,7 @@ public class ActionsUtils {
             // Check if we've hit the bottom of the page to prevent infinite looping
             long currentHeight = (long) ((JavascriptExecutor) driver).executeScript("return window.pageYOffset;");
             if (currentHeight == lastHeight) {
-                System.out.println("Reached end of page. Element not found.");
+                logger.warn("Reached end of page while scrolling; Element not found.");
                 break;
             }
             lastHeight = currentHeight;
@@ -48,27 +64,14 @@ public class ActionsUtils {
             // Check if we've hit the top of the page
             long currentHeight = (long) ((JavascriptExecutor) driver).executeScript("return window.pageYOffset;");
             if (currentHeight == 0 || currentHeight == lastHeight) {
-                System.out.println("Reached top of page. Element not found.");
+                logger.warn("Reached top of page while scrolling; Element not found.");
                 break;
             }
             lastHeight = currentHeight;
         }
     }
 
-    /**
-     * Helper method to check if the element is displayed and enabled (interactable).
-     */
-    private static boolean isInteractable(WebElement element) {
-        try {
-            boolean idDisplayed = element.isDisplayed();
-            boolean isEnabled = element.isEnabled();
-            return !element.isDisplayed() || !element.isEnabled();
-        } catch (Exception e) {
-            return true;
-        }
-    }
-
-    public void moveToElement(WebElement element){
+    public void moveToElement(WebElement element) {
         actions.moveToElement(element);
     }
 
@@ -88,14 +91,5 @@ public class ActionsUtils {
                         "var rect = arguments[0].getBoundingClientRect();" +
                                 "return (rect.top >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight));",
                         element));
-    }
-
-    /**
-     * Waits for a loader or spinner to disappear from the UI/DOM.
-     * Use 'By' locator to avoid StaleElementReferenceException.
-     */
-    public void waitForElementToDisappear(WebElement locator, int timeoutInMilliSeconds) {
-              waitUtils.explicitWait(timeoutInMilliSeconds)
-                      .until(ExpectedConditions.invisibilityOf(locator));
     }
 }
