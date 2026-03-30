@@ -3,6 +3,7 @@ package com.framework.base;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.framework.utils.ConfigReader;
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.commons.io.FileUtils;
@@ -30,7 +31,7 @@ public class BasePage {
 
         // 1. Point to the local directory where Chrome stores your user data
         // Replace <YourUsername> with your actual OS username
-        options.addArguments("user-data-dir=C:\\Users\\Suresh.Patibandla\\AppData\\Local\\Google\\Chrome\\User Data");
+        options.addArguments("user-data-dir=C:\\Users\\<user.dir>\\AppData\\Local\\Google\\Chrome\\User Data");
 
         // 2. Point to the specific profile folder (e.g., "Default", "Profile 1", "Profile 2")
         options.addArguments("profile-directory=Default");
@@ -60,6 +61,7 @@ public class BasePage {
 
         switch (browserName.toLowerCase()) {
             case "chrome" -> {
+                WebDriverManager.chromedriver().setup();
                 ChromeOptions chromeOptions;
                 if (Boolean.parseBoolean(ConfigReader.getProperty("headless"))) {
                     chromeOptions = setChromeDriverHeadLessOptions();
@@ -69,10 +71,17 @@ public class BasePage {
                 }
                 localDriver = new ChromeDriver(chromeOptions);
             }
-            case "firefox" -> localDriver = new FirefoxDriver();
-            case "edge" -> localDriver = new EdgeDriver();
+            case "firefox" ->{
+                WebDriverManager.firefoxdriver().setup();
+                localDriver = new FirefoxDriver();
+            }
+            case "edge" -> {
+                WebDriverManager.edgedriver().setup();
+                localDriver = new EdgeDriver();
+            }
             default -> {
-                logger.warn("Browser '{browserName}' not explicitly supported. Defaulting to Chrome.", browserName);
+                logger.warn("Browser '{}' not explicitly supported. Defaulting to Chrome.", browserName);
+                WebDriverManager.chromedriver().setup();
                 localDriver = new ChromeDriver();
             }
         }

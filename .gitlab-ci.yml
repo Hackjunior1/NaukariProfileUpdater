@@ -19,11 +19,13 @@ compile_project:
   stage: build
   script:
     - mvn clean compile
+    - echo "I am building your your project code."
 
 # 2. Test Stage: Executes your Cucumber/TestNG runner
 execute_tests:
   stage: test
   script:
+    - echo "I am running a test to make sure everything works!"
     # Run Maven test. Ensure your TestNG runner is configured in pom.xml
     # If you want to filter specific tags: -Dcucumber.filter.tags="@Smoke"
     - mvn test
