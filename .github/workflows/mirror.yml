@@ -1,13 +1,17 @@
-name: Mirror to GitLab
-on: [push, delete]
+name: Sync to GitLab
+on:
+  push:
+    branches:
+      - main  # Or your primary branch name
+  workflow_dispatch: # Allows manual sync from the Actions tab
 jobs:
-  gitlab-mirror:
+  mirror:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-      - uses: pixta-dev/repository-mirroring-action@v1
-        with:
-          target_repo_url: https://gitlab.com
-          ssh_private_key: ${{ secrets.GITLAB_TOKEN }}
+          fetch-depth: 0 # Required to get all history
+      - name: Mirror to GitLab
+        run: |
+          git push --mirror https://oauth2:${{ secrets.GITLAB_TOKEN }}@://gitlab.com
