@@ -14,4 +14,4 @@ jobs:
           fetch-depth: 0 # Required to get all history
       - name: Mirror to GitLab
         run: |
-          git push --mirror https://oauth2:${{ secrets.GITLAB_TOKEN }}@gitlab.com
+          git push --mirror https://oauth2:${{ secrets.GITLAB_TOKEN }}//git@gitlab.com:Hackjunior1/NaukariProfileUpdater.git
