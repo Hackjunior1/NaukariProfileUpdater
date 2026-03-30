@@ -1,0 +1,52 @@
+# Use a Maven image that includes OpenJDK 17 (adjust version if needed)
+image: maven:3.8.5-openjdk-17
+
+# Cache Maven dependencies to speed up subsequent builds
+cache:
+  paths:
+    - .m2/repository
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+
+stages:
+  - build
+  - test
+  - report
+
+# 1. Build Stage: Compiles code and downloads dependencies
+compile_project:
+  stage: build
+  script:
+    - mvn clean compile
+
+# 2. Test Stage: Executes your Cucumber/TestNG runner
+execute_tests:
+  stage: test
+  script:
+    # Run Maven test. Ensure your TestNG runner is configured in pom.xml
+    # If you want to filter specific tags: -Dcucumber.filter.tags="@Smoke"
+    - mvn test
+  allow_failure: true # Allows the pipeline to continue to the reporting stage even if tests fail
+  artifacts:
+    when: always
+    paths:
+      - target/cucumber-reports/
+      - target/extent-reports/
+      - target/*.pdf # Captures your PDF reports
+    expire_in: 1 week
+
+# 3. Report Stage: (Optional) You can host your Extent Reports on GitLab Pages
+pages:
+  stage: report
+  dependencies:
+    - execute_tests
+  script:
+    - mkdir .public
+    - cp -r target/extent-reports/* .public/
+    - mv .public public
+  artifacts:
+    paths:
+      - public
+  only:
+    - main # Only publish reports from the main branch
