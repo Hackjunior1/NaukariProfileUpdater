@@ -28,7 +28,7 @@ public class ScreenShotUtils {
     /**
      * Captures a screenshot and saves it to the Reports/screenshot directory.
      */
-    public void takeScreenshot() {
+    public String takeScreenshot() {
         if (driver == null) {
             logger.error("WebDriver is null. Cannot capture screenshot. Ensure browser is initialized.");
             throw new IllegalStateException("WebDriver is not initialized");
@@ -50,6 +50,7 @@ public class ScreenShotUtils {
 
             Files.copy(sourceFile.toPath(), destinationPath, StandardCopyOption.REPLACE_EXISTING);
             logger.info("Screenshot saved at: {}", destinationPath.toAbsolutePath());
+            return destinationPath.toString();
         } catch (IOException e) {
             logger.error("Failed to save screenshot at {}", destinationPath.toAbsolutePath(), e);
             throw new RuntimeException("Failed to save screenshot", e);

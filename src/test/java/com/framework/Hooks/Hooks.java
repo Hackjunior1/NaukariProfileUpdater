@@ -1,6 +1,7 @@
 package com.framework.Hooks;
 
 import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
 import com.framework.TestContext.TestContext;
 import com.framework.base.BasePage;
 import com.framework.utils.ConfigReader;
@@ -18,7 +19,8 @@ import org.testng.Reporter;
 
 public class Hooks {
     private static final Logger logger = LogManager.getLogger(Hooks.class);
-    private static ExtentReports extentReports = ExtentReportUtils.reportsInitializer();
+    private static final ExtentReports extentReports = ExtentReportUtils.reportsInitializer();
+    private static ExtentTest extentTest;
     TestContext testContext;
     WebDriver driver;
     BasePage basePage;
@@ -59,7 +61,9 @@ public class Hooks {
         if (driver != null) {
             try {
                 // Save screenshot to disk - Extent will find it via screenshot.dir config
-                screenShotUtils.takeScreenshot();
+              String screenShotPath =  screenShotUtils.takeScreenshot();
+                extentTest = extentReports.createTest(scenario.getName());
+                extentTest.addScreenCaptureFromPath(screenShotPath,"Failed case ScreenShot");
             } catch (Exception e) {
                 logger.error("Failed to capture screenshot", e);
             }
@@ -79,7 +83,9 @@ public class Hooks {
             if (scenario.isFailed()) {
                 try {
                     // Save failed screenshot to disk
-                    screenShotUtils.takeScreenshot();
+                    String screenShotPath = screenShotUtils.takeScreenshot();
+                    extentTest = extentReports.createTest(scenario.getName());
+                    extentTest.addScreenCaptureFromPath(screenShotPath,"Failed case ScreenShot");
                 } catch (Exception e) {
                     logger.error("Failed to capture screenshot on failure", e);
                 }
