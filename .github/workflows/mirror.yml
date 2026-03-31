@@ -26,4 +26,5 @@ jobs:
 
       - name: Mirror push to GitLab
         run: |
-          git push --mirror gitlab
+          git push mirror gitlab
+          git push gitlab --tags
