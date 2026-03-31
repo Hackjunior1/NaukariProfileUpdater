@@ -40,17 +40,13 @@ public class ScreenShotUtils {
         Path destinationPath = screenshotDir.resolve(fileName);
 
         try {
-            Files.createDirectories(screenshotDir);
-            File sourceFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-
-            if (sourceFile == null) {
-                logger.error("Screenshot capture returned null. Driver may not be responsive.");
-                throw new IllegalStateException("Screenshot capture returned null");
+            if (!Files.exists(screenshotDir)) {
+                Files.createDirectories(screenshotDir);
             }
-
+            File sourceFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
             Files.copy(sourceFile.toPath(), destinationPath, StandardCopyOption.REPLACE_EXISTING);
             logger.info("Screenshot saved at: {}", destinationPath.toAbsolutePath());
-            return destinationPath.toString();
+            return destinationPath.toAbsolutePath().toString();
         } catch (IOException e) {
             logger.error("Failed to save screenshot at {}", destinationPath.toAbsolutePath(), e);
             throw new RuntimeException("Failed to save screenshot", e);
