@@ -33,14 +33,14 @@ execute_tests:
     # Run Maven test. Ensure your TestNG runner is configured in pom.xml
     # If you want to filter specific tags: -Dcucumber.filter.tags="@Smoke"
     - mvn test
-  allow_failure: true # Allows the pipeline to continue to the reporting stage even if tests fail
   artifacts:
-    when: always
-    paths:
-      - target/cucumber-reports/
-      - target/extent-reports/
-      - target/*.pdf # Captures your PDF reports
-    expire_in: 1 week
+  when: always  # Crucial: upload reports even if tests fail
+  paths:
+    - target/surefire-reports/  # Standard Maven test logs
+    - target/*.html             # Catch-all for HTML reports
+    - target/cucumber-reports/
+    - Reports/Screenshots/
+  expire_in: 1 week
 
 # 3. Report Stage: (Optional) You can host your Extent Reports on GitLab Pages
 pages:

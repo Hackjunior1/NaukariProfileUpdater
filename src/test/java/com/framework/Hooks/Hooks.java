@@ -86,6 +86,8 @@ public class Hooks {
                     String screenShotPath = screenShotUtils.takeScreenshot();
                     extentTest = extentReports.createTest(scenario.getName());
                     extentTest.addScreenCaptureFromPath(screenShotPath,"Failed case ScreenShot");
+                    byte[] screenshot = java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(screenShotPath));
+                    scenario.attach(screenshot,"image/png", "Failure Screenshot: " + scenario.getName());
                 } catch (Exception e) {
                     logger.error("Failed to capture screenshot on failure", e);
                 }
