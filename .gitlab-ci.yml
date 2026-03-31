@@ -1,5 +1,6 @@
 # Use a Maven image that includes OpenJDK 17 (adjust version if needed)
-image: maven:3.8.5-openjdk-17
+# image: maven:3.8.5-openjdk-17
+image: markhobson/maven-chrome:jdk-17
 
 # Cache Maven dependencies to speed up subsequent builds
 cache:
@@ -28,7 +29,7 @@ compile_project:
 execute_tests:
   stage: test
   script:
-    - echo "I am running a test to make sure everything works!"
+    - echo "Running tests in a Chrome-ready environment"
     # Run Maven test. Ensure your TestNG runner is configured in pom.xml
     # If you want to filter specific tags: -Dcucumber.filter.tags="@Smoke"
     - mvn test
