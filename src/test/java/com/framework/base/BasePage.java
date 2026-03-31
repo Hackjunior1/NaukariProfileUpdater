@@ -7,11 +7,14 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.simple.SimpleLogger;
+import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,12 +22,14 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 
 public class BasePage {
     private static final Logger logger = LogManager.getLogger(BasePage.class);
 
     // ThreadLocal ensures thread safety for parallel test execution
-    private static ThreadLocal<WebDriver> driver = new ThreadLocal<>();
+    private static final ThreadLocal<WebDriver> driver = new ThreadLocal<>();
 
     public static ChromeOptions setupUserProfileForChromeDriver() {
         ChromeOptions options = new ChromeOptions();
@@ -61,6 +66,7 @@ public class BasePage {
 
         switch (browserName.toLowerCase()) {
             case "chrome" -> {
+//                WebDriverManager.chromedriver().browserVersion("auto").setup();
                 WebDriverManager.chromedriver().setup();
                 ChromeOptions chromeOptions;
                 if (Boolean.parseBoolean(ConfigReader.getProperty("headless"))) {
@@ -76,6 +82,10 @@ public class BasePage {
                 localDriver = new FirefoxDriver();
             }
             case "edge" -> {
+//               [Fatal Error] showing while using the edge driver. Execute once and see the issue once.
+                System.setProperty(SimpleLogger.DEFAULT_FLOW_MESSAGE_FACTORY_CLASS.toString(), "warn");
+                System.setProperty("wdm.edgeDriverUrl", "https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/");
+                WebDriverManager.edgedriver().setup();
                 WebDriverManager.edgedriver().setup();
                 localDriver = new EdgeDriver();
             }
@@ -96,6 +106,26 @@ public class BasePage {
         // Dynamic waits
         getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         getDriver().manage().timeouts().pageLoadTimeout(Duration.ofSeconds(30));
+
+//         Log versions for debugging version mismatch issues
+        logBrowserAndDriverVersion(getDriver());
+    }
+
+    /*****
+     logBrowserAndDriverVersion using to print the browser version using in local system and the driver version
+     trying to find solution of "SessionNotCreated" error in Ci Cd run
+     */
+    private void logBrowserAndDriverVersion(WebDriver webDriver) {
+        Capabilities caps = ((RemoteWebDriver) webDriver).getCapabilities();
+        String browserName = caps.getBrowserName();
+        String browserVersion = caps.getBrowserVersion(); // Or caps.getCapability("browserVersion")
+        Map<String, Object> chromeOptions = (Map<String, Object>) caps.getCapability("chrome");
+        String driverVersion = (String) chromeOptions.get("chromedriverVersion");
+
+        System.out.println("Browser: " + browserName + " Version: " + browserVersion);
+        System.out.println("Driver Version: " + driverVersion);
+        logger.info("Browser: {} Version: {}", browserName, browserVersion);
+        logger.info("Driver Version: {}", driverVersion);
     }
 
     /**
@@ -126,7 +156,7 @@ public class BasePage {
         // In this scenario we only have one data set inside the json data file. in case we have multiple data entries
         // in json data file sheet all of them will be return in form of List. that is why we have used hashMap inside a list.
         // and returning that list
-        return mapper.readValue(jsonData, new TypeReference<List<HashMap<String, String>>>() {
+        return mapper.readValue(jsonData, new TypeReference<>() {
         });
     }
 }

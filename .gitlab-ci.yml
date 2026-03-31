@@ -20,6 +20,9 @@ compile_project:
   script:
     - mvn clean compile
     - echo "I am building your your project code."
+    - echo "The project namespace is:$CI_PROJECT_NAMESPACE"
+    - echo "The root namespace is:$CI_PROJECT_ROOT_NAMESPACE"
+    - echo "The full project path is:$CI_PROJECT_PATH"
 
 # 2. Test Stage: Executes your Cucumber/TestNG runner
 execute_tests:
