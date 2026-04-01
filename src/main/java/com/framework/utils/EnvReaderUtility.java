@@ -27,6 +27,10 @@ public class EnvReaderUtility {
         }
 
         if (value == null) {
+            value = System.getProperty(key);
+        }
+
+        if (value == null) {
             logger.warn("Critical Warning: Credential key '{}' was not found in the .env file.", key);
         }
         return value;
