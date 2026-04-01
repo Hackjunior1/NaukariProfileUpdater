@@ -50,7 +50,7 @@ public class WaitUtils {
      * Fluent Wait implementation for Element Clickability.
      * Specifically ignores StaleElementReferenceException which often occurs during JS refreshes.
      */
-    public WebElement waitForClickable(WebElement element) {
+    public void waitForClickable(WebElement element) {
         Wait<WebDriver> wait = new FluentWait<>(webDriver)
                 .withTimeout(defaultTimeout)
                 .pollingEvery(milliSec)
@@ -60,7 +60,7 @@ public class WaitUtils {
                 .withMessage("Timeout: Element was not clickable after " + defaultTimeout + " seconds.");
 
         try {
-            return wait.until(ExpectedConditions.elementToBeClickable(element));
+             wait.until(ExpectedConditions.elementToBeClickable(element));
         } catch (TimeoutException e) {
             throw new TimeoutException("Element remained non-clickable: " + element.toString(), e);
         }

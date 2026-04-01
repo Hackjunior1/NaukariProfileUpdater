@@ -2,16 +2,19 @@ package com.framework.pageObjectImplementation;
 
 import com.framework.TestContext.TestContext;
 import com.framework.utils.BrowserUtils;
+import com.framework.utils.WaitUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 public class LoginPageImpl{
     private static final Logger logger = LogManager.getLogger(LoginPageImpl.class);
 
     BrowserUtils browserUtils;
     WebDriver driver;
+    WaitUtils waitUtils;
 
 //     =========================================================================
     /**
@@ -25,7 +28,8 @@ public class LoginPageImpl{
         this.driver = driver;
         TestContext testContext = new TestContext();
 
-        browserUtils = testContext.getPageObjectManager().getBrowserUtils();
+        this.browserUtils = testContext.getPageObjectManager().getBrowserUtils();
+        this.waitUtils = testContext.getPageObjectManager().getWaitUtils();
     }
 
     private final By txtEmailOrUsername = By.id("usernameField");
@@ -55,6 +59,9 @@ public class LoginPageImpl{
      */
     public void performLogin(String username, String password) {
         System.out.println("user name = "+username+"\nPassword = "+password);
+
+        WebElement waitingEle = waitUtils.waitForElementVisible(txtEmailOrUsername,5,200);
+        waitUtils.waitForClickable(waitingEle);
         driver.findElement(txtEmailOrUsername).sendKeys(username);
         driver.findElement(txtPassword).sendKeys(password);
         driver.findElement(btnLogin).click();

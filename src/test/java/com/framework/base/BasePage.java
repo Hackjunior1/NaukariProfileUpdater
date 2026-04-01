@@ -53,13 +53,14 @@ public class BasePage {
     public ChromeOptions setChromeDriverHeadLessOptions() {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless=new");
-        // options.addArguments("--window-size=1920,1080"); // Set a fixed size so screenshots aren't tiny mobile-sized captures
-        options.addArguments("--start-fullscreen");
+        options.addArguments("--window-size=1920,1080"); // Set a fixed size so screenshots aren't tiny mobile-sized captures
+        options.addArguments("--force-device-scale-factor=0.7");
+        options.addArguments("--high-dpi-support=0.9");
         options.addArguments("--disable-gpu");
         options.addArguments("--no-sandbox"); // Crucial for Jenkins/Docker
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-notifications");
-
+        options.addArguments("--incognito");
 //         --- ADD THESE TO BYPASS THE ACCESS DENIED BLOCK FOR ANY WEBSITE WHICH DOESN'T HEADLESS EXECUTION ---
         options.addArguments("--disable-blink-features=AutomationControlled");
         String actualVersion = getDriverVersion(null);
