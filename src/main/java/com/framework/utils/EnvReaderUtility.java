@@ -20,6 +20,12 @@ public class EnvReaderUtility {
      */
     public static String getCredential(String key) {
         String value = dotenv.get().get(key);
+
+//      Fallback: Check System Environment Variables (GitLab CI)
+        if (value == null) {
+            value = System.getenv(key);
+        }
+
         if (value == null) {
             logger.warn("Critical Warning: Credential key '{}' was not found in the .env file.", key);
         }
