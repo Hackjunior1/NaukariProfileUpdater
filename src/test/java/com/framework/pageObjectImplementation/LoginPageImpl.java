@@ -54,6 +54,7 @@ public class LoginPageImpl{
      * @param password Fetched from .env
      */
     public void performLogin(String username, String password) {
+        System.out.println("user name = "+username+"\nPassword = "+password);
         driver.findElement(txtEmailOrUsername).sendKeys(username);
         driver.findElement(txtPassword).sendKeys(password);
         driver.findElement(btnLogin).click();

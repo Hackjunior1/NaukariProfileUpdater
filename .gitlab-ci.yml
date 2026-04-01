@@ -37,7 +37,7 @@ execute_tests:
   artifacts:
     when: always  # Crucial: upload reports even if tests fail
     paths:
-      - Reports/surefire-reports/  # Standard Maven test logs
+      - target/surefire-reports/  # Standard Maven test logs
       - Reports/ExtentReports/SparkReport.html             # Catch-all for HTML reports
       - Reports/cucumber-reports/
       - Reports/ScreenShots/

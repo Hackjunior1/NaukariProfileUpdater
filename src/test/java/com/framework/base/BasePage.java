@@ -53,7 +53,8 @@ public class BasePage {
     public ChromeOptions setChromeDriverHeadLessOptions() {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless=new");
-        options.addArguments("--window-size=1920,1080"); // Set a fixed size so screenshots aren't tiny mobile-sized captures
+        // options.addArguments("--window-size=1920,1080"); // Set a fixed size so screenshots aren't tiny mobile-sized captures
+        options.addArguments("--start-fullscreen");
         options.addArguments("--disable-gpu");
         options.addArguments("--no-sandbox"); // Crucial for Jenkins/Docker
         options.addArguments("--disable-dev-shm-usage");
