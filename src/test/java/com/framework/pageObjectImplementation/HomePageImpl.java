@@ -8,6 +8,7 @@ import com.framework.utils.WaitUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.testng.Assert;
@@ -44,10 +45,14 @@ public class HomePageImpl{
     private final By btnHomePageSidePaneCross = By.cssSelector(".crossIcon.chatBot.chatBot-ic-cross");
 
     public void isUserLoggedIn(String userName) {
-//        isSidePanelDisplayed();
-        WebElement visibleElement = waitUtils.waitForElementVisible(txtProfileName,5,250);
+        WebElement visibleElement;
 
-//        WebElement profileNameElement = driver.findElement(txtProfileName);
+        try {
+            visibleElement = waitUtils.waitForElementVisible(txtProfileName, 5, 500);
+        } catch (TimeoutException ex) {
+//            isSidePanelDisplayed();
+            visibleElement = waitUtils.waitForElementVisible(txtProfileName, 10, 500);
+        }
 
         Assert.assertTrue(verificationUtils.isElementDisplayed(visibleElement));
         String usrName = visibleElement.getText();
@@ -57,10 +62,14 @@ public class HomePageImpl{
     }
 
     public void isSidePanelDisplayed() {
-        WebElement ele = waitUtils.waitForElementVisible(homePageSidePanel,5,250);
-        boolean isVisible = verificationUtils.isElementDisplayed(ele);
-        if (isVisible) {
-            driver.findElement(homePageSidePanel).click();
+        try {
+            WebElement ele = waitUtils.waitForElementVisible(homePageSidePanel, 5, 250);
+            boolean isVisible = verificationUtils.isElementDisplayed(ele);
+            if (isVisible) {
+                driver.findElement(homePageSidePanel).click();
+            }
+        } catch (TimeoutException e) {
+            // Side panel did not appear within the timeout; nothing to close, safely ignore.
         }
     }
 

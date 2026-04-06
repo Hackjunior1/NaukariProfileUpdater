@@ -58,8 +58,6 @@ public class LoginPageImpl{
      * @param password Fetched from .env
      */
     public void performLogin(String username, String password) {
-        System.out.println("user name = "+username+"\nPassword = "+password);
-
         WebElement waitingEle = waitUtils.waitForElementVisible(txtEmailOrUsername,5,200);
         waitUtils.waitForClickable(waitingEle);
         driver.findElement(txtEmailOrUsername).sendKeys(username);
