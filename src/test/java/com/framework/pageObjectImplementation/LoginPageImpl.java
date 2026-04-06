@@ -58,7 +58,7 @@ public class LoginPageImpl{
     public void navigateToLoginPage(String url) {
         driver.get(url);
 //      --- BYPASSING THE OTP SCREEN USING COOKIE SESSION
-        
+
 //        String cookieValue = System.getenv("SESSION_COOKIE_VALUE");
 //        Cookie ck = new Cookie("NtToken", cookieValue, ".naukri.com", "/", null);
 //        driver.manage().addCookie(ck);
