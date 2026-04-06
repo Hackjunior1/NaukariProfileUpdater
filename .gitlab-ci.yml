@@ -56,4 +56,4 @@ pages:
     paths:
       - public
   only:
-    - main # Only publish reports from the main branch
+    - master # Only publish reports from the master branch

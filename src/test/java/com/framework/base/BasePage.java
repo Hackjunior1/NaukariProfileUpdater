@@ -61,14 +61,18 @@ public class BasePage {
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-notifications");
         options.addArguments("--incognito");
-//         --- ADD THESE TO BYPASS THE ACCESS DENIED BLOCK FOR ANY WEBSITE WHICH DOESN'T HEADLESS EXECUTION ---
+
+//      --- ADDED THESE TO BYPASS THE ACCESS DENIED BLOCK FOR ANY WEBSITE WHICH DOESN'T HEADLESS EXECUTION ---
         options.addArguments("--disable-blink-features=AutomationControlled");
         String actualVersion = getDriverVersion(null);
         String customUA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + actualVersion + " Safari/537.36";
 
-//      options.addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"); // Sets a real browser identity
         options.addArguments("user-agent=" + customUA);
         options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
+        options.setExperimentalOption("useAutomationExtension", false);
+
+//      Hides the "Chrome is being controlled by automated software" notification
+        options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
         options.setExperimentalOption("useAutomationExtension", false);
 
         return options;
