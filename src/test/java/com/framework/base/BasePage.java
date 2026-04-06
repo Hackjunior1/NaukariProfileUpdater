@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.simple.SimpleLogger;
 import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -22,10 +23,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,7 +60,9 @@ public class BasePage {
         options.addArguments("--disable-notifications");
         options.addArguments("--incognito");
 
-//      --- ADDED THESE TO BYPASS THE ACCESS DENIED BLOCK FOR ANY WEBSITE WHICH DOESN'T HEADLESS EXECUTION ---
+//      --- Hides the "Chrome is being controlled by automated software" notification
+        options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
+        options.setExperimentalOption("useAutomationExtension", false);
         options.addArguments("--disable-blink-features=AutomationControlled");
         String actualVersion = getDriverVersion(null);
         String customUA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + actualVersion + " Safari/537.36";
@@ -71,11 +71,17 @@ public class BasePage {
         options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
         options.setExperimentalOption("useAutomationExtension", false);
 
-//      Hides the "Chrome is being controlled by automated software" notification
-        options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
-        options.setExperimentalOption("useAutomationExtension", false);
-
         return options;
+    }
+
+    public void getSessionCookies(){
+        Set<Cookie> cookies = getDriver().manage().getCookies();
+// 3. Print them or save to a file to copy for GitLab
+        for (Cookie ck : cookies) {
+            if (ck.getName().equalsIgnoreCase("bm_sv"))
+                System.out.println(ck.getName() + ":" + ck.getValue());
+        }
+
     }
 
     /**
@@ -84,11 +90,11 @@ public class BasePage {
      */
     public void initializeBrowser(String browserName) {
         WebDriver localDriver;
-
+        Map<String, Object> params = new HashMap<>();
         switch (browserName.toLowerCase()) {
             case "chrome" -> {
 //                WebDriverManager.chromedriver().browserVersion("auto").setup();
-                WebDriverManager.chromedriver().setup();
+//                WebDriverManager.chromedriver().setup();
                 ChromeOptions chromeOptions;
                 if (Boolean.parseBoolean(ConfigReader.getProperty("headless"))) {
                     chromeOptions = setChromeDriverHeadLessOptions();
@@ -97,6 +103,9 @@ public class BasePage {
                     chromeOptions.addArguments("--disable-notifications");
                 }
                 localDriver = new ChromeDriver(chromeOptions);
+                params.put("source", "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})");
+                ((ChromeDriver) localDriver).executeCdpCommand("Page.addScriptToEvaluateOnNewDocument", params);
+
             }
             case "firefox" ->{
                 WebDriverManager.firefoxdriver().setup();

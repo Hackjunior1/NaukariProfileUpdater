@@ -1,11 +1,14 @@
 package com.framework.pageObjectImplementation;
 
 import com.framework.TestContext.TestContext;
+import com.framework.base.BasePage;
 import com.framework.utils.BrowserUtils;
+import com.framework.utils.CookieManagerUtils;
 import com.framework.utils.WaitUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -15,6 +18,8 @@ public class LoginPageImpl{
     BrowserUtils browserUtils;
     WebDriver driver;
     WaitUtils waitUtils;
+    BasePage basePage;
+    CookieManagerUtils cookieManagerUtils;
 
 //     =========================================================================
     /**
@@ -30,6 +35,8 @@ public class LoginPageImpl{
 
         this.browserUtils = testContext.getPageObjectManager().getBrowserUtils();
         this.waitUtils = testContext.getPageObjectManager().getWaitUtils();
+        this.basePage = testContext.getPageObjectManager().getBasePage();
+        this.cookieManagerUtils = testContext.getPageObjectManager().getCookieManagerUtils();
     }
 
     private final By txtEmailOrUsername = By.id("usernameField");
@@ -50,6 +57,15 @@ public class LoginPageImpl{
      */
     public void navigateToLoginPage(String url) {
         driver.get(url);
+//      --- BYPASSING THE OTP SCREEN USING COOKIE SESSION
+        
+//        String cookieValue = System.getenv("SESSION_COOKIE_VALUE");
+//        Cookie ck = new Cookie("NtToken", cookieValue, ".naukri.com", "/", null);
+//        driver.manage().addCookie(ck);
+        cookieManagerUtils.saveCookies();
+        cookieManagerUtils.loadCookies();
+        driver.navigate().refresh(); // Now you are logged in
+
     }
 
     /**
