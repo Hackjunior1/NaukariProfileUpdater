@@ -25,6 +25,7 @@ public class PageObjectManager {
     private WaitUtils waitUtils;
     private ActionsUtils actionsUtils;
     private CookieManagerUtils cookieManagerUtils;
+    private EmailUtils emailUtils;
 
     /**
      * ✅ OPTIMIZED: Initialize BasePage ONCE in constructor.
@@ -68,5 +69,9 @@ public class PageObjectManager {
 
     public CookieManagerUtils getCookieManagerUtils() {
         return (cookieManagerUtils == null) ? cookieManagerUtils = new CookieManagerUtils(basePage.getDriver()) : cookieManagerUtils;
+    }
+
+    public EmailUtils getEmailUtils() {
+        return (emailUtils == null) ? emailUtils = new EmailUtils(basePage.getDriver()) : emailUtils;
     }
 }

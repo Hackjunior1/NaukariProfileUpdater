@@ -4,11 +4,11 @@ import com.framework.TestContext.TestContext;
 import com.framework.base.BasePage;
 import com.framework.utils.BrowserUtils;
 import com.framework.utils.CookieManagerUtils;
+import com.framework.utils.EmailUtils;
 import com.framework.utils.WaitUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -20,6 +20,7 @@ public class LoginPageImpl{
     WaitUtils waitUtils;
     BasePage basePage;
     CookieManagerUtils cookieManagerUtils;
+    EmailUtils emailUtils;
 
 //     =========================================================================
     /**
@@ -37,6 +38,7 @@ public class LoginPageImpl{
         this.waitUtils = testContext.getPageObjectManager().getWaitUtils();
         this.basePage = testContext.getPageObjectManager().getBasePage();
         this.cookieManagerUtils = testContext.getPageObjectManager().getCookieManagerUtils();
+        this.emailUtils = testContext.getPageObjectManager().getEmailUtils();
     }
 
     private final By txtEmailOrUsername = By.id("usernameField");
@@ -57,14 +59,13 @@ public class LoginPageImpl{
      */
     public void navigateToLoginPage(String url) {
         driver.get(url);
-//      --- BYPASSING THE OTP SCREEN USING COOKIE SESSION
+
 
 //        String cookieValue = System.getenv("SESSION_COOKIE_VALUE");
 //        Cookie ck = new Cookie("NtToken", cookieValue, ".naukri.com", "/", null);
 //        driver.manage().addCookie(ck);
-        cookieManagerUtils.saveCookies();
-        cookieManagerUtils.loadCookies();
-        driver.navigate().refresh(); // Now you are logged in
+
+         // Now you are logged in
 
     }
 
@@ -80,5 +81,12 @@ public class LoginPageImpl{
         driver.findElement(txtPassword).sendKeys(password);
         driver.findElement(btnLogin).click();
         logger.info("login button clicked and user login action started");
+
+//      --- BYPASSING THE OTP SCREEN USING COOKIE SESSION
+//        waitUtils.threadSleepWait(3000);
+//        cookieManagerUtils.saveCookies();
+//        cookieManagerUtils.loadCookies();
+//        driver.navigate().refresh();
+        emailUtils.getOTPFromEmail();
     }
 }

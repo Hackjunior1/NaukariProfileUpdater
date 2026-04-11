@@ -67,10 +67,9 @@ public class WaitUtils {
     }
 
     /**
-     *
-     * @return WebElement once the element is located in DOM irrespective of whether it is visible in UI.
-     * presenceOfElementLocated() will only look for element in DOM and check the availability of element
-     * Once the element is located in DOM this method returns that element.
+     * Waits until the element is located in the DOM, irrespective of whether it is visible in the UI.
+     * presenceOfElementLocated() will only look for element in DOM and check the availability of element.
+     * Once the element is located in DOM the wait will complete.
      */
 
     public void waitForElementPresence(int timeoutSec, int pollingMs, By locator) {
@@ -111,6 +110,21 @@ public class WaitUtils {
      */
     public void ImplicitWebDriverWait(WebDriver driver, int seconds) {
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(seconds));
+    }
+
+
+    /**
+     * Convenience wrapper around {@link Thread#sleep(long)} with proper interruption handling.
+     *
+     * @param millis the time to sleep in milliseconds; non-positive values are ignored.
+     */
+    public void threadSleepWait(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.warn("Thread interrupted while sleeping for {} ms", millis, e);
+        }
     }
 
 
