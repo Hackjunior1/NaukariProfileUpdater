@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
+import java.util.Map;
 import java.util.Properties;
 
 public class EmailUtils {
@@ -28,18 +29,15 @@ public class EmailUtils {
     }
 
 
-//    public void getOTPFromEmail(Map<String,String> mailUserDetails, String elementName) {
-    public void getOTPFromEmail() {
+    public void getOTPFromEmail(Map<String,String> mailUserDetails) {
+//    public void getOTPFromEmail() {
 
         try {
-//            String emailProvider = mailUserDetails.get("emailProvider");
-//            String username = mailUserDetails.get("username");
-//            String password = mailUserDetails.get("password");
+            String emailProvider = mailUserDetails.get("emailProvider");
+            String username = mailUserDetails.get("username");
+            String password = mailUserDetails.get("password");
 //            String subject = mailUserDetails.get("subject");
 //            String startBoundary = mailUserDetails.get("startBoundary");
-            String emailProvider = "gmail";
-            String username = "suresh.p.mail2026@gmail.com";
-            String password = "Dragonball#77";
             String subject = null;
             String startBoundary = null;
 //            String endBoundary = agentHelper.getVariableValue(dataValues[5]);
@@ -166,18 +164,16 @@ public class EmailUtils {
     public void connectEmailServer(String emailProvider,String userName,String password)  {
         boolean returnStatus=false;
         Properties properties = new Properties();
-        Properties props = System.getProperties();
-        props.setProperty("mail.store.protocol", "imaps");
         Message[] foundMessages =null;
 
+        // Configure protocol / host / port per provider
         switch(emailProvider.toUpperCase()){
             case "GMAIL":
-                properties.put("mail.imap.host", "imap.gmail.com");
-                properties.put("mail.imap.port", 993);
-                // SSL setting
-                properties.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-                properties.setProperty("mail.imap.socketFactory.fallback", "false");
-                properties.setProperty("mail.imap.socketFactory.port", String.valueOf(993));
+                // Use IMAPS (SSL) for Gmail
+                properties.put("mail.store.protocol", "imaps");
+                properties.put("mail.imaps.host", "imap.gmail.com");
+                properties.put("mail.imaps.port", "993");
+                properties.put("mail.imaps.ssl.enable", "true");
                 break;
             case "YAHOO":
                 properties.put("mail.imap.host", "imap.mail.yahoo.com");
@@ -206,17 +202,14 @@ public class EmailUtils {
 
             case "OUTLOOK":
 
-                properties.setProperty("mail.store.protocol", "imap");
-                properties.setProperty("mail.imap.ssl.enable", "true");
+                // Office 365 / Outlook IMAP over SSL
+                properties.setProperty("mail.store.protocol", "imaps");
+                properties.put("mail.imaps.host", "outlook.office365.com");
+                properties.put("mail.imaps.port", "993");
+                properties.setProperty("mail.imaps.ssl.enable", "true");
                 properties.setProperty("mail.imaps.partialfetch", "false");
                 properties.put("mail.mime.base64.ignoreerrors", "true");
-
-                //added
-//                properties.put("mail.imap.port", 587);
-//                properties.setProperty("mail.imap.socketFactory.port", String.valueOf(587));
-                properties.setProperty("mail.imap.starttls.enable","true");
                 properties.setProperty("mail.debug","true");
-                properties.setProperty("mail.imap.auth.plain.disable","true");
 
                 break;
 
@@ -227,15 +220,23 @@ public class EmailUtils {
         try {
 
             // connects to the message store
-            store = session.getStore("imap");
-            System.out.println("userName:" + userName + ":::" + password);
-            if (emailProvider.equalsIgnoreCase("outlook")) {
-//                store.connect("cigniti-com.mail.protection.outlook.com", userName, password);
-                store.connect("smtp.office365.com", userName, password);
+            String protocol = properties.getProperty("mail.store.protocol", "imap");
+            store = session.getStore(protocol);
+            System.out.println("Connecting to email server for user: " + userName);
+
+            String host = null;
+            if (emailProvider.equalsIgnoreCase("gmail")) {
+                host = "imap.gmail.com";
+            } else if (emailProvider.equalsIgnoreCase("outlook")) {
+                host = "outlook.office365.com";
+            }
+
+            if (host != null) {
+                store.connect(host, userName, password);
             } else {
                 store.connect(userName, password);
             }
-            // store.connect(userName, password);
+
             System.out.println("Connected to Email server…");
         }
         catch (NoSuchProviderException ex) {

@@ -12,6 +12,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class LoginPageImpl{
     private static final Logger logger = LogManager.getLogger(LoginPageImpl.class);
 
@@ -81,12 +84,11 @@ public class LoginPageImpl{
         driver.findElement(txtPassword).sendKeys(password);
         driver.findElement(btnLogin).click();
         logger.info("login button clicked and user login action started");
-
-//      --- BYPASSING THE OTP SCREEN USING COOKIE SESSION
-//        waitUtils.threadSleepWait(3000);
-//        cookieManagerUtils.saveCookies();
-//        cookieManagerUtils.loadCookies();
-//        driver.navigate().refresh();
-        emailUtils.getOTPFromEmail();
+        
+        Map<String,String> userCred = new HashMap<>();
+        userCred.put("emailProvider","gmail");
+        userCred.put("username",username);
+        userCred.put("password",password);
+        emailUtils.getOTPFromEmail(userCred);
     }
 }
