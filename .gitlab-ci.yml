@@ -30,17 +30,19 @@ execute_tests:
   stage: test
   script:
     - echo "Running tests in a Chrome-ready environment"
+    # Install additional dependencies for Chrome stability in containers
+    - apt-get update && apt-get install -y --no-install-recommends dbus dbus-x11 xdg-utils
     # Run Maven test. Ensure your TestNG runner is configured in pom.xml
     # If you want to filter specific tags: -Dcucumber.filter.tags="@Smoke"
-    - mvn test
+    - mvn test -Dheadless=true
   allow_failure: true # Allows the pipeline to continue to the reporting stage even if tests fail
   artifacts:
     when: always  # Crucial: upload reports even if tests fail
     paths:
       - target/surefire-reports/  # Standard Maven test logs
-      - Reports/ExtentReports/SparkReport.html             # Catch-all for HTML reports
-#      - Reports/cucumber-reports/
-      - PipelineReports/Screenshots
+      - Reports/ExtentReports/SparkReport.html  # Extent Reports HTML
+      - Reports/ScreenShots/  # Screenshot artifacts
+      - Reports/ExtentReports/ScreenShots  # Pipeline screenshots
     expire_in: 1 week
 
 # 3. Report Stage: (Optional) You can host your Extent Reports on GitLab Pages

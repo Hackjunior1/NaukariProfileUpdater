@@ -59,6 +59,11 @@ public class BasePage {
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-notifications");
         options.addArguments("--incognito");
+        options.addArguments("--disable-blink-features=AutomationControlled");
+        options.addArguments("--start-maximized");
+        options.addArguments("--disable-extensions");
+        options.addArguments("--disable-plugins");
+        options.addArguments("--disable-images"); // Optional: faster loading
 
 //      --- Hides the "Chrome is being controlled by automated software" notification
         options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
@@ -68,8 +73,6 @@ public class BasePage {
         String customUA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + actualVersion + " Safari/537.36";
 
         options.addArguments("user-agent=" + customUA);
-        options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
-        options.setExperimentalOption("useAutomationExtension", false);
 
         return options;
     }
@@ -93,8 +96,8 @@ public class BasePage {
         Map<String, Object> params = new HashMap<>();
         switch (browserName.toLowerCase()) {
             case "chrome" -> {
-//                WebDriverManager.chromedriver().browserVersion("auto").setup();
-//                WebDriverManager.chromedriver().setup();
+                // Enable WebDriverManager for automatic ChromeDriver download and management
+                WebDriverManager.chromedriver().browserVersion("auto").setup();
                 ChromeOptions chromeOptions;
                 if (Boolean.parseBoolean(ConfigReader.getProperty("headless"))) {
                     chromeOptions = setChromeDriverHeadLessOptions();
