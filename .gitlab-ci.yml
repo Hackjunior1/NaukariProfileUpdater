@@ -40,7 +40,7 @@ execute_tests:
       - target/surefire-reports/  # Standard Maven test logs
       - Reports/ExtentReports/SparkReport.html             # Catch-all for HTML reports
 #      - Reports/cucumber-reports/
-      - Reports/ScreenShots
+      - PipelineReports/Screenshots
     expire_in: 1 week
 
 # 3. Report Stage: (Optional) You can host your Extent Reports on GitLab Pages
