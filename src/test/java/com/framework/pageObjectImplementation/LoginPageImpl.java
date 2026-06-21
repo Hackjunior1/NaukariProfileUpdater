@@ -9,10 +9,12 @@ import com.framework.utils.WaitUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class LoginPageImpl{
@@ -55,6 +57,8 @@ public class LoginPageImpl{
     private final By googleNextButton = By.xpath(
             "//div[@data-primary-action-label='Next']//span[normalize-space(.)='Next']/parent::button");
     private final By googleUserPassword = By.xpath("//input[@aria-label='Enter your password']");
+    private final By otpFieldContainer = By.xpath("//div[contains(@class,'otp-fields')]");
+    private final By otpInputFields = By.xpath("//div[contains(@class,'otp-fields')]//input[@type='tel']");
 
     /**
      * Navigates to the provided base URL.
@@ -84,11 +88,67 @@ public class LoginPageImpl{
         driver.findElement(txtPassword).sendKeys(password);
         driver.findElement(btnLogin).click();
         logger.info("login button clicked and user login action started");
-        
+
         Map<String,String> userCred = new HashMap<>();
-        userCred.put("emailProvider","gmail");
+        userCred.put("emailProvider","GMAIL");
         userCred.put("username",username);
         userCred.put("password",password);
-        emailUtils.getOTPFromEmail(userCred);
+        String otp = emailUtils.getOTPFromEmail(userCred);
+        System.out.println("OTP = "+otp);
+       enterOtp(otp);
+
+
+    }
+
+    private void enterOtp(String otp) {
+        String normalizedOtp = otp == null ? "" : otp.replaceAll("\\D", "").trim();
+        if (normalizedOtp.length() != 6) {
+            throw new IllegalArgumentException("OTP must contain exactly 6 digits. Received: '" + otp + "'");
+        }
+
+        waitForOtpFieldsToLoad();
+
+        for (int i = 0; i < normalizedOtp.length(); i++) {
+            typeOtpDigit(i, normalizedOtp.charAt(i));
+        }
+    }
+
+    private void waitForOtpFieldsToLoad() {
+        waitUtils.waitForElementVisible(otpFieldContainer, 30, 250);
+
+        long endTime = System.currentTimeMillis() + 30000;
+        while (System.currentTimeMillis() < endTime) {
+            List<WebElement> fields = driver.findElements(otpInputFields);
+            if (fields.size() >= 6) {
+                return;
+            }
+            waitUtils.threadSleepWait(250);
+        }
+
+        throw new TimeoutException("Timed out waiting for 6 OTP input fields to appear on the page.");
+    }
+
+    private void typeOtpDigit(int index, char digit) {
+        long endTime = System.currentTimeMillis() + 10000;
+        while (System.currentTimeMillis() < endTime) {
+            List<WebElement> fields = driver.findElements(otpInputFields);
+            if (fields.size() <= index) {
+                waitUtils.threadSleepWait(200);
+                continue;
+            }
+
+            WebElement field = fields.get(index);
+            try {
+                waitUtils.waitForClickable(field);
+                field.click();
+                field.sendKeys(String.valueOf(digit));
+                logger.info("Entered OTP digit {} into box {}", digit, index + 1);
+                return;
+            } catch (Exception e) {
+                waitUtils.threadSleepWait(200);
+            }
+        }
+
+        throw new TimeoutException("Unable to enter OTP digit at position " + (index + 1));
     }
 }

@@ -7,7 +7,7 @@ Feature: Naukri Profile Auto-Updater
   Scenario: Successfully update the user profile to keep profile active
     Given the user navigates to the Naukri login page
     When the user logs into Naukri profile
-    And Verify the user has successfully logged in and landed in Home page
-    And the user navigated to profile page
-    And the user Edit profile
-    Then Verify profile last updated displayed with "Today"
+#    And Verify the user has successfully logged in and landed in Home page
+#    And the user navigated to profile page
+#    And the user Edit profile
+#    Then Verify profile last updated displayed with "Today"

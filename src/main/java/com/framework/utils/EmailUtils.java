@@ -16,6 +16,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class EmailUtils {
     Store store=null;
@@ -29,7 +31,7 @@ public class EmailUtils {
     }
 
 
-    public void getOTPFromEmail(Map<String,String> mailUserDetails) {
+    public String getOTPFromEmail(Map<String,String> mailUserDetails) {
 //    public void getOTPFromEmail() {
 
         try {
@@ -38,8 +40,8 @@ public class EmailUtils {
             String password = mailUserDetails.get("password");
 //            String subject = mailUserDetails.get("subject");
 //            String startBoundary = mailUserDetails.get("startBoundary");
-            String subject = null;
-            String startBoundary = null;
+            String subject = "Your OTP for logging in Naukri account";
+            String startBoundary = "t:";
 //            String endBoundary = agentHelper.getVariableValue(dataValues[5]);
 //            String localVariable = null;
 //            try {
@@ -51,16 +53,21 @@ public class EmailUtils {
             String emailBody = getEmailBody(emailProvider, username, password, subject);
             Document doc = Jsoup.parse(emailBody);
             emailBody = doc.body().text();
-            String[] emailbodyValues = emailBody.split(startBoundary);
-            int endBoundary = emailbodyValues[1].length();
-            String finalText = emailbodyValues[1].substring(0, endBoundary);
+            String otp = extractOtp(emailBody);
+//            String[] emailbodyValues = emailBody.split(startBoundary);
+//            int endBoundary = emailbodyValues[1].length();
+//            String finalText = emailbodyValues[1].substring(0, endBoundary);
         //    agentHelper.setLocalVariableValue(localVariable, finalText);
-            System.out.println("Successfully captured the text from email body  " + finalText);
+//            System.out.println("Successfully captured the text from email body  " + finalText);
+            System.out.println("Successfully captured the text from email body  " + emailBody);
+            System.out.println("Successfully extracted OTP from email body  " + otp);
+            return otp;
 
         } catch (Exception e) {
             System.out.println("Unable to captured the text from email body"+ e);
 //                    captureScreenShot(driver));
             screenShotUtils.takeScreenshot();
+            throw new RuntimeException("Unable to retrieve OTP from email", e);
         }
     }
 
@@ -175,43 +182,43 @@ public class EmailUtils {
                 properties.put("mail.imaps.port", "993");
                 properties.put("mail.imaps.ssl.enable", "true");
                 break;
-            case "YAHOO":
-                properties.put("mail.imap.host", "imap.mail.yahoo.com");
-                properties.put("mail.imap.port", 993);
-                // SSL setting
-                properties.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-                properties.setProperty("mail.imap.socketFactory.fallback", "false");
-                properties.setProperty("mail.imap.socketFactory.port", String.valueOf(993));
-
-                properties.put("mail.imap.host", "imap-mail.outlook.com");
-                properties.put("mail.imap.port", 993);
-                // SSL setting
-                properties.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-                properties.setProperty("mail.imap.socketFactory.fallback", "false");
-                properties.setProperty("mail.imap.socketFactory.port", String.valueOf(993));
-                break;
-
-            case "HOTMAIL":
-                properties.put("mail.imap.host", "imap-mail.outlook.com");
-                properties.put("mail.imap.port", 993);
-                properties.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-                properties.setProperty("mail.imap.socketFactory.fallback", "false");
-                properties.setProperty("mail.imap.socketFactory.port", String.valueOf(993));
-
-                break;
-
-            case "OUTLOOK":
-
-                // Office 365 / Outlook IMAP over SSL
-                properties.setProperty("mail.store.protocol", "imaps");
-                properties.put("mail.imaps.host", "outlook.office365.com");
-                properties.put("mail.imaps.port", "993");
-                properties.setProperty("mail.imaps.ssl.enable", "true");
-                properties.setProperty("mail.imaps.partialfetch", "false");
-                properties.put("mail.mime.base64.ignoreerrors", "true");
-                properties.setProperty("mail.debug","true");
-
-                break;
+//            case "YAHOO":
+//                properties.put("mail.imap.host", "imap.mail.yahoo.com");
+//                properties.put("mail.imap.port", 993);
+//                // SSL setting
+//                properties.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+//                properties.setProperty("mail.imap.socketFactory.fallback", "false");
+//                properties.setProperty("mail.imap.socketFactory.port", String.valueOf(993));
+//
+//                properties.put("mail.imap.host", "imap-mail.outlook.com");
+//                properties.put("mail.imap.port", 993);
+//                // SSL setting
+//                properties.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+//                properties.setProperty("mail.imap.socketFactory.fallback", "false");
+//                properties.setProperty("mail.imap.socketFactory.port", String.valueOf(993));
+//                break;
+//
+//            case "HOTMAIL":
+//                properties.put("mail.imap.host", "imap-mail.outlook.com");
+//                properties.put("mail.imap.port", 993);
+//                properties.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+//                properties.setProperty("mail.imap.socketFactory.fallback", "false");
+//                properties.setProperty("mail.imap.socketFactory.port", String.valueOf(993));
+//
+//                break;
+//
+//            case "OUTLOOK":
+//
+//                // Office 365 / Outlook IMAP over SSL
+//                properties.setProperty("mail.store.protocol", "imaps");
+//                properties.put("mail.imaps.host", "outlook.office365.com");
+//                properties.put("mail.imaps.port", "993");
+//                properties.setProperty("mail.imaps.ssl.enable", "true");
+//                properties.setProperty("mail.imaps.partialfetch", "false");
+//                properties.put("mail.mime.base64.ignoreerrors", "true");
+//                properties.setProperty("mail.debug","true");
+//
+//                break;
 
         }
         Session session = Session.getInstance(properties);
@@ -296,5 +303,19 @@ public class EmailUtils {
             }
         }
         return null;
+    }
+
+    private String extractOtp(String emailBody) {
+        if (emailBody == null || emailBody.trim().isEmpty()) {
+            throw new IllegalStateException("Email body is empty; cannot extract OTP.");
+        }
+
+        Pattern otpPattern = Pattern.compile("\\b(\\d{6})\\b");
+        Matcher matcher = otpPattern.matcher(emailBody);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        throw new IllegalStateException("No 6-digit OTP found in the email body.");
     }
 }
