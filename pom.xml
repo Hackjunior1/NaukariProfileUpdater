@@ -8,15 +8,15 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>14</maven.compiler.source>
-        <maven.compiler.target>14</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <cucumber.version>7.15.0</cucumber.version>
         <selenium.version>4.33.0</selenium.version>
         <testng.version>7.9.0</testng.version>
         <restassured.version>5.4.0</restassured.version>
         <extent.version>5.1.1</extent.version>
-        <jackson.Version>2.21.1</jackson.Version>
+        <jackson.Version>2.21.4</jackson.Version>
         <apache.poi.Version>5.4.0</apache.poi.Version>
     </properties>
 
