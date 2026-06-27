@@ -16,7 +16,7 @@
         <testng.version>7.9.0</testng.version>
         <restassured.version>5.4.0</restassured.version>
         <extent.version>5.1.1</extent.version>
-        <jackson.Version>2.21.1</jackson.Version>
+        <jackson.Version>2.21.4</jackson.Version>
         <apache.poi.Version>5.4.0</apache.poi.Version>
     </properties>
 
