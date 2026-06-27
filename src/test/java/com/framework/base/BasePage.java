@@ -51,7 +51,7 @@ public class BasePage {
     public ChromeOptions setChromeDriverHeadLessOptions() {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless=new");
-        options.addArguments("--window-size=1920,1080"); // Set a fixed size so screenshots aren't tiny mobile-sized captures
+        options.addArguments("--window-size=1920,1080");
         options.addArguments("--force-device-scale-factor=0.7");
         options.addArguments("--high-dpi-support=0.9");
         options.addArguments("--disable-gpu");
@@ -64,8 +64,26 @@ public class BasePage {
         options.addArguments("--disable-extensions");
         options.addArguments("--disable-plugins");
         options.addArguments("--disable-images"); // Optional: faster loading
+        
+        // Additional stability options
+        options.addArguments("--disable-web-resources");
+        options.addArguments("--disable-sync");
+        options.addArguments("--disable-popup-blocking");
+        options.addArguments("--disable-default-apps");
+        options.addArguments("--disable-preconnect");
+        options.addArguments("--disable-component-extensions-with-background-pages");
+        
+        // Prevent crashes from out-of-memory
+        options.addArguments("--disable-background-networking");
+        options.addArguments("--disable-breakpad");
+        options.addArguments("--disable-client-side-phishing-detection");
+        options.addArguments("--disable-component-update");
+        options.addArguments("--disable-default-apps");
+        options.addArguments("--disable-hang-monitor");
+        options.addArguments("--disable-prompt-on-repost");
+        options.addArguments("--metrics-recording-only");
+        options.addArguments("--safebrowsing-disable-auto-update");
 
-//      --- Hides the "Chrome is being controlled by automated software" notification
         options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
         options.setExperimentalOption("useAutomationExtension", false);
         options.addArguments("--disable-blink-features=AutomationControlled");
@@ -97,7 +115,14 @@ public class BasePage {
         switch (browserName.toLowerCase()) {
             case "chrome" -> {
                 // Enable WebDriverManager for automatic ChromeDriver download and management
-                WebDriverManager.chromedriver().browserVersion("auto").setup();
+                try {
+//                    WebDriverManager.chromedriver().browserVersion("auto").setup();
+                    WebDriverManager.chromedriver().setup();
+                    logger.info("ChromeDriver setup successful with browserVersion auto");
+                } catch (Exception e) {
+                    logger.warn("Failed to setup ChromeDriver with browserVersion auto. Attempting default setup.");
+                    WebDriverManager.chromedriver().setup();
+                }
                 ChromeOptions chromeOptions;
                 if (Boolean.parseBoolean(ConfigReader.getProperty("headless"))) {
                     chromeOptions = setChromeDriverHeadLessOptions();
@@ -105,9 +130,18 @@ public class BasePage {
                     chromeOptions = new ChromeOptions();
                     chromeOptions.addArguments("--disable-notifications");
                 }
+                
+                // Specify Chrome binary path if it's in a non-standard location
+                String chromeBinaryPath = ConfigReader.getProperty("chrome.binary.path");
+                if (chromeBinaryPath != null && !chromeBinaryPath.isEmpty()) {
+                    chromeOptions.setBinary(chromeBinaryPath);
+                    logger.info("Chrome binary path set to: {}", chromeBinaryPath);
+                }
+                
                 localDriver = new ChromeDriver(chromeOptions);
                 params.put("source", "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})");
                 ((ChromeDriver) localDriver).executeCdpCommand("Page.addScriptToEvaluateOnNewDocument", params);
+                logger.info("Chrome driver initialized successfully");
 
             }
             case "firefox" ->{

@@ -93,7 +93,12 @@ public class LoginPageImpl{
         userCred.put("emailProvider","GMAIL");
         userCred.put("username",username);
         userCred.put("password",password);
-        String otp = emailUtils.getOTPFromEmail(userCred);
+        String otp;
+        try {
+            otp = emailUtils.getOTPFromEmail(userCred);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         System.out.println("OTP = "+otp);
        enterOtp(otp);
 

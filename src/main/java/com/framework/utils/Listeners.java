@@ -1,8 +1,5 @@
 package com.framework.utils;
 
-import java.io.File;
-import java.nio.file.Paths;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.ITestContext;
@@ -15,9 +12,6 @@ public class Listeners implements ITestListener {
     @Override
     public void onStart(ITestContext context) {
         log.info("========= Test Suite Started: " + context.getName() + " =========");
-        System.out.println("extent.properties exists? " + 
-        Paths.get("target/test-classes/extent.properties").toFile().exists());
-        System.out.println("extent.properties loaded: " + (new File("target/test-classes/extent.properties").exists()));
     }
 
     @Override
