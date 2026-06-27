@@ -1,5 +1,8 @@
 target/
 !.mvn/wrapper/maven-wrapper.jar
+
+# Secrets — never commit real credentials
+.env
 !**/src/main/**/target/
 !**/src/test/**/target/
 .kotlin
@@ -37,9 +40,5 @@ build/
 
 ### Mac OS ###
 .DS_Store
-
-# Environment variables
-.env
-
 # existing reports ignore
 #/Reports/
