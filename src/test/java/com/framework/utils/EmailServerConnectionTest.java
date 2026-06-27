@@ -136,7 +136,7 @@ public class EmailServerConnectionTest {
     
     public static void main(String[] args) {
         // Test with Gmail
-        testEmailServerConnection("GMAIL", "suresh.p.mail2026@gmail.com", "Dragonball#77");
+        testEmailServerConnection("GMAIL", "UN","pwd");
         
         // Test with Outlook
         // testEmailServerConnection("OUTLOOK", "your-email@outlook.com", "your-password");
