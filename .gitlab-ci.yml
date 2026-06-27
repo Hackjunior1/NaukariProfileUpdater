@@ -1,6 +1,6 @@
-# Use a Maven image that includes OpenJDK 17 (adjust version if needed)
-# image: maven:3.8.5-openjdk-17
-image: markhobson/maven-chrome:jdk-17
+# Use a Maven image that includes OpenJDK 21 (adjust version if needed)
+# image: maven:3.9-eclipse-temurin-21
+image: markhobson/maven-chrome:jdk-21
 
 # Cache Maven dependencies to speed up subsequent builds
 cache:
